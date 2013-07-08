@@ -34,7 +34,7 @@ class Solver:
         # Create the solver.
         self.sot = SOT('solver')
         self.sot.signal('damping').value = 1e-6
-        self.sot.setNumberDofs(self.robot.dimension)
+        self.sot.setSize(self.robot.dimension)
 
         # Plug the solver control into the filter.
         plug(self.sot.control, self.jointLimitator.controlIN)
