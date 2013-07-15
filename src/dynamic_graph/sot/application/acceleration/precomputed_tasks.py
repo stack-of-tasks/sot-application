@@ -24,6 +24,9 @@ from dynamic_graph.sot.dyninv.meta_tasks_dyn import gotoNd, MetaTaskDynCom, \
 from dynamic_graph.sot.dyninv.meta_task_dyn_6d import MetaTaskDyn6d
 from dynamic_graph import plug
 
+from numpy import eye
+from dynamic_graph.sot.core.matrix_util import matrixToTuple
+
 class Solver:
 
     def __init__(self, robot):
@@ -72,11 +75,11 @@ class Solver:
         if task.name!="taskposture" and "taskposture" in self.toList():
             self.sot.down("taskposture")
 
-    def remove (self, task):
+    def rm (self, task):
         """
         Proxy method to remove a task from the sot
         """
-        self.sot.remove (task.name)
+        self.sot.rm (task.name)
 
     def pop (self):
         """
@@ -141,36 +144,62 @@ def setContacts(contactLF,contactRF):
     contactRF.feature.errordot.value=(0,0,0,0,0,0)
     
 
-def createBalanceAndPosture(robot,solver):
+def createTasks(robot):
     
-    # Task Limits
-    robot.taskLim = TaskDynLimits('taskLim')
-    setTaskLim(robot.taskLim,robot)
-    
+    # MetaTasks dictonary
+    robot.mTasks = dict()
+    robot.tasksIne = dict()
+
     # Foot contacts
     robot.contactLF = MetaTaskDyn6d('contact_lleg',robot.dynamic,'lf','left-ankle')
     robot.contactRF = MetaTaskDyn6d('contact_rleg',robot.dynamic,'rf','right-ankle')
     setContacts(robot.contactLF,robot.contactRF)
+
+    # MetaTasksDyn6d for other operational points
+    robot.mTasks['waist'] = MetaTaskDyn6d('waist', robot.dynamic, 'waist', 'waist')
+    robot.mTasks['chest'] = MetaTaskDyn6d('chest', robot.dynamic, 'chest', 'chest')
+    robot.mTasks['rh'] = MetaTaskDyn6d('rh', robot.dynamic, 'rh', 'right-wrist')
+    robot.mTasks['lh'] = MetaTaskDyn6d('lh', robot.dynamic, 'lh', 'left-wrist')
     
+    for taskName in robot.mTasks:
+        robot.mTasks[taskName].feature.frame('desired')
+        robot.mTasks[taskName].gain.setConstant(10)
+        robot.mTasks[taskName].task.dt.value = robot.timeStep
+        robot.mTasks[taskName].featureDes.velocity.value=(0,0,0,0,0,0)
+   
+    handMgrip=eye(4); handMgrip[0:3,3] = (0,0,-0.14)
+    robot.mTasks['rh'].opmodif = matrixToTuple(handMgrip)
+    robot.mTasks['lh'].opmodif = matrixToTuple(handMgrip)
+ 
+
     # CoM Task
-    robot.taskCom = MetaTaskDynCom(robot.dynamic,robot.timeStep)
+    robot.mTasks['com'] = MetaTaskDynCom(robot.dynamic,robot.timeStep)
     robot.dynamic.com.recompute(0)
-    robot.taskCom.featureDes.errorIN.value = robot.dynamic.com.value
-    robot.taskCom.task.controlGain.value = 10
+    robot.mTasks['com'].featureDes.errorIN.value = robot.dynamic.com.value
+    robot.mTasks['com'].task.controlGain.value = 10
 
     # Posture Task
-    robot.taskPosture = MetaTaskDynPosture(robot.dynamic,robot.timeStep)
-    robot.taskPosture.ref = robot.halfSitting
-    robot.taskPosture.gain.setConstant(5)
+    robot.mTasks['posture'] = MetaTaskDynPosture(robot.dynamic,robot.timeStep)
+    robot.mTasks['posture'].ref = robot.halfSitting
+    robot.mTasks['posture'].gain.setConstant(5)   
 
+
+
+def createBalanceAndPosture(robot,solver):
+
+    solver.clear()
+    
+    # Task Limits
+    robot.taskLim = TaskDynLimits('taskLim')
+    setTaskLim(robot.taskLim,robot)
+    solver.push(robot.taskLim)
+    
 
     # --- push tasks --- #
-    solver.clear()
     solver.sot.addContact(robot.contactLF)
     solver.sot.addContact(robot.contactRF)
-    solver.push(robot.taskLim)
-    solver.push(robot.taskCom.task)
-    solver.push(robot.taskPosture.task)
+    solver.push(robot.mTasks['com'].task)
+    solver.push(robot.mTasks['posture'].task)
 
 
 
@@ -181,6 +210,8 @@ def  initialize (robot):
 
 
     # --- create tasks --- #
+    createTasks(robot)
+
     createBalanceAndPosture(robot,solver)
 
 
