@@ -1,4 +1,11 @@
-This package provides python initializations scripts for the Stack of Tasks.
-These scripts are aimed at initializing control graphs dependending on the 
-application: type of control variable (velocity, acceleration, torque), type of
-solver (equality only inequality and equality).
+sot-application
+===============
+
+This package provides python initializations scripts for the Stack of
+Tasks.
+
+These scripts are aimed at initializing control graphs dependending on
+the application:
+
+ - type of control variable (velocity, acceleration, torque)
+ - type of solver (equality only inequality and equality).
