@@ -18,7 +18,7 @@
 from dynamic_graph.sot.core.feature_position import FeaturePosition
 from dynamic_graph.sot.core import FeatureGeneric, FeatureJointLimits, Task, \
     JointLimitator
-from dynamic_graph.sot.dyninv import SolverKine, TaskDynLimits
+from dynamic_graph.sot.dyninv import SolverKine, TaskDynLimits, TaskDynInequality
 from dynamic_graph.sot.dyninv.meta_tasks_dyn import gotoNd, MetaTaskDynCom, \
     MetaTaskDynPosture
 from dynamic_graph.sot.dyninv.meta_task_dyn_6d import MetaTaskDyn6d
@@ -151,8 +151,8 @@ def createTasks(robot):
     robot.tasksIne = dict()
 
     # Foot contacts
-    robot.contactLF = MetaTaskDyn6d('contact_lleg',robot.dynamic,'lf','left-ankle')
-    robot.contactRF = MetaTaskDyn6d('contact_rleg',robot.dynamic,'rf','right-ankle')
+    robot.contactLF = MetaTaskDyn6d('contactLF',robot.dynamic,'lf','left-ankle')
+    robot.contactRF = MetaTaskDyn6d('contactRF',robot.dynamic,'rf','right-ankle')
     setContacts(robot.contactLF,robot.contactRF)
 
     # MetaTasksDyn6d for other operational points
@@ -177,12 +177,27 @@ def createTasks(robot):
     robot.dynamic.com.recompute(0)
     robot.mTasks['com'].featureDes.errorIN.value = robot.dynamic.com.value
     robot.mTasks['com'].task.controlGain.value = 10
+    robot.mTasks['com'].feature.selec.value = '011'
 
     # Posture Task
     robot.mTasks['posture'] = MetaTaskDynPosture(robot.dynamic,robot.timeStep)
     robot.mTasks['posture'].ref = robot.halfSitting
     robot.mTasks['posture'].gain.setConstant(5)   
 
+    
+    ## TASK INEQUALITY
+
+    # Task Height
+    featureHeight = FeatureGeneric('featureHeight')
+    plug(robot.dynamic.com,featureHeight.errorIN)
+    plug(robot.dynamic.Jcom,featureHeight.jacobianIN)
+    robot.tasksIne['taskHeight']=TaskDynInequality('taskHeight')
+    plug(robot.dynamic.velocity,robot.tasksIne['taskHeight'].qdot)
+    robot.tasksIne['taskHeight'].add(featureHeight.name)
+    robot.tasksIne['taskHeight'].selec.value = '100'
+    robot.tasksIne['taskHeight'].referenceInf.value = (0.,0.,0.)    # Xmin, Ymin
+    robot.tasksIne['taskHeight'].referenceSup.value = (0.,0.,0.80771)  # Xmax, Ymax
+    robot.tasksIne['taskHeight'].dt.value=robot.timeStep
 
 
 def createBalanceAndPosture(robot,solver):
@@ -192,12 +207,12 @@ def createBalanceAndPosture(robot,solver):
     # Task Limits
     robot.taskLim = TaskDynLimits('taskLim')
     setTaskLim(robot.taskLim,robot)
-    solver.push(robot.taskLim)
     
 
     # --- push tasks --- #
     solver.sot.addContact(robot.contactLF)
     solver.sot.addContact(robot.contactRF)
+    solver.push(robot.taskLim)
     solver.push(robot.mTasks['com'].task)
     solver.push(robot.mTasks['posture'].task)
 
@@ -213,6 +228,5 @@ def  initialize (robot):
     createTasks(robot)
 
     createBalanceAndPosture(robot,solver)
-
 
     return solver
