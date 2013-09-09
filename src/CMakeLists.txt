@@ -27,6 +27,6 @@ INSTALL(FILES
 
 INSTALL(FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/dynamic_graph/sot/application/__init__.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/dynamic_graph/sot/application/acceleration/precomputed_tasks.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/dynamic_graph/sot/application/acceleration/precomputed_meta_tasks.py
   DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/acceleration
   )
