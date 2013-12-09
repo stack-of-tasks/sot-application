@@ -22,7 +22,7 @@ from dynamic_graph import plug
 
 class Solver:
 
-    def __init__(self, robot):
+    def __init__(self, robot, solverType=SOT):
         self.robot = robot
 
         # Make sure control does not exceed joint limits.
@@ -32,7 +32,7 @@ class Solver:
         plug(self.robot.dynamic.lowerJl, self.jointLimitator.lowerJl)
 
         # Create the solver.
-        self.sot = SOT('solver')
+        self.sot = solverType('solver')
         self.sot.signal('damping').value = 1e-6
         self.sot.setSize(self.robot.dimension)
 
@@ -118,7 +118,7 @@ def createBalanceTask (robot, taskName, gain = 1.):
     return task
 
 
-def initialize (robot):
+def initialize (robot, solverType=SOT):
     """
     Tasks are stored into 'tasks' dictionary.
 
@@ -162,7 +162,7 @@ def initialize (robot):
     initializeSignals (robot)
 
     # --- create solver --- #
-    solver = Solver (robot)
+    solver = Solver (robot, solverType)
 
     # --- push balance task --- #
     solver.push (robot.tasks ['com'])
