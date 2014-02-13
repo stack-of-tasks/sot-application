@@ -14,11 +14,15 @@
 # sot-application. If not, see <http://www.gnu.org/licenses/>.
 
 #!/usr/bin/env python
+import warnings
 
 from dynamic_graph.sot.core.feature_position import FeaturePosition
 from dynamic_graph.sot.core import FeatureGeneric, FeatureJointLimits, Task, \
     JointLimitator, SOT
+from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph import plug
+from dynamic_graph.sot.core import GainAdaptive
+from numpy import identity
 
 class Solver:
 
@@ -61,21 +65,21 @@ class Solver:
     def __str__ (self):
         return self.sot.display ()
 
-def initializeSignals (robot):
+def initializeSignals (application, robot):
     """
     For portability, make some signals accessible as attributes.
     """
-    robot.comRef = robot.featureComDes.errorIN
-    robot.zmpRef = robot.device.zmp
-    robot.com = robot.dynamic.com
-    robot.comSelec = robot.featureCom.selec
-    robot.comdot = robot.featureComDes.errordotIN
+    application.comRef = application.featureComDes.errorIN
+    application.zmpRef = robot.device.zmp
+    application.com = robot.dynamic.com
+    application.comSelec = application.featureCom.selec
+    application.comdot = application.featureComDes.errordotIN
 
 def createCenterOfMassFeatureAndTask(robot,
                                      featureName, featureDesName,
                                      taskName,
                                      selec = '111',
-                                     gain = 1.):
+                                     ingain = 1.):
     robot.dynamic.com.recompute(0)
     robot.dynamic.Jcom.recompute(0)
     
@@ -86,16 +90,19 @@ def createCenterOfMassFeatureAndTask(robot,
     featureComDes = FeatureGeneric(featureDesName)
     featureComDes.errorIN.value = robot.dynamic.com.value
     featureCom.setReference(featureComDes.name)
-    comTask = Task(taskName)
-    comTask.add(featureName)
-    comTask.controlGain.value = gain
-    return (featureCom, featureComDes, comTask)
+    taskCom = Task(taskName)
+    taskCom.add(featureName)
+    gainCom = GainAdaptive('gain'+taskName)
+    gainCom.setConstant(ingain)
+    plug(gainCom.gain, taskCom.controlGain)
+    plug(taskCom.error, gainCom.error)    
+    return (featureCom, featureComDes, taskCom, gainCom)
 
 def createOperationalPointFeatureAndTask(robot,
                                          operationalPointName,
                                          featureName,
                                          taskName,
-                                         gain = .2):
+                                         ingain = .2):
     jacobianName = 'J{0}'.format(operationalPointName)
     robot.dynamic.signal(operationalPointName).recompute(0)
     robot.dynamic.signal(jacobianName).recompute(0)
@@ -106,21 +113,46 @@ def createOperationalPointFeatureAndTask(robot,
                         robot.dynamic.signal(operationalPointName).value)
     task = Task(taskName)
     task.add(featureName)
-    task.controlGain.value = gain
-    return (feature, task)
+    gain = GainAdaptive('gain'+taskName)
+    gain.setConstant(ingain)
+    plug(gain.gain, task.controlGain)
+    plug(task.error, gain.error)  
+    return (feature, task, gain)
 
-def createBalanceTask (robot, taskName, gain = 1.):
+def createBalanceTask (robot, application, taskName, ingain = 1.):
     task = Task (taskName)
-    task.add (robot.featureCom.name)
-    task.add (robot.leftAnkle.name)
-    task.add (robot.rightAnkle.name)
-    task.controlGain.value = gain
-    return task
+    task.add (application.featureCom.name)
+    task.add (application.leftAnkle.name)
+    task.add (application.rightAnkle.name)
+    gain = GainAdaptive('gain'+taskName)
+    gain.setConstant(ingain)
+    plug(gain.gain, task.controlGain)
+    plug(task.error, gain.error)      
+    return (task, gain)
+
+def createPostureTask (robot, taskName, ingain = 1.):
+    robot.dynamic.position.recompute(0)
+    feature    = FeatureGeneric('feature'+taskName)
+    featureDes = FeatureGeneric('featureDes'+taskName)
+    featureDes.errorIN.value = robot.halfSitting
+    plug(robot.dynamic.position,feature.errorIN)
+    feature.setReference(featureDes.name)
+    robotDim = len(robot.dynamic.position.value)
+    feature.jacobianIN.value = matrixToTuple( identity(robotDim) )
+    task = Task (taskName)    
+    task.add (feature.name)
+    gain = GainAdaptive('gain'+taskName)    
+    plug(gain.gain,task.controlGain)
+    plug(task.error,gain.error)
+    gain.setConstant(ingain)
+    return (feature, featureDes, task, gain)
 
 
 def initialize (robot, solverType=SOT):
     """
-    Tasks are stored into 'tasks' dictionary.
+    Tasks are stored into 'tasks' dictionary. 
+    
+    WARNING: deprecated, use Application instead
 
     For portability, some signals are accessible as attributes:
       - zmpRef: input (vector),
@@ -130,9 +162,11 @@ def initialize (robot, solverType=SOT):
       - comdot: input (vector) reference velocity of the center of mass
 
     """
+
+    warnings.warn("The function dynamic_graph.sot.application.velocity.precomputed_tasks.initialize is deprecated. Use dynamic_graph.sot.application.velocity.precomputed_tasks.Application")
     
     # --- center of mass ------------
-    (robot.featureCom, robot.featureComDes, robot.comTask) = \
+    (robot.featureCom, robot.featureComDes, robot.comTask, robot.gainCom) = \
         createCenterOfMassFeatureAndTask(robot,
         '{0}_feature_com'.format(robot.name),
         '{0}_feature_ref_com'.format(robot.name),
@@ -141,8 +175,9 @@ def initialize (robot, solverType=SOT):
     # --- operational points tasks -----
     robot.features = dict()
     robot.tasks = dict()
+    robot.gains = dict()
     for op in robot.OperationalPoints:
-        (robot.features[op], robot.tasks[op]) = \
+        (robot.features[op], robot.tasks[op], robot.gains[op]) = \
             createOperationalPointFeatureAndTask(robot,
             op, '{0}_feature_{1}'.format(robot.name, op),
             '{0}_task_{1}'.format(robot.name, op))
@@ -153,13 +188,14 @@ def initialize (robot, solverType=SOT):
             memberName += i.capitalize()
         setattr(robot, memberName, robot.features[op])
     robot.tasks ['com'] = robot.comTask
+    robot.gains ['com'] = robot.gainCom
     robot.waist.selec.value = '011100'
 
     # --- balance task --- #
-    robot.tasks ['balance'] =\
-        createBalanceTask (robot, '{0}_task_balance'.format (robot.name))
+    (robot.tasks ['balance'], robot.gains['balance']) =\
+        createBalanceTask (robot, robot, '{0}_task_balance'.format (robot.name))
 
-    initializeSignals (robot)
+    initializeSignals (robot, robot)
 
     # --- create solver --- #
     solver = Solver (robot, solverType)
@@ -170,3 +206,75 @@ def initialize (robot, solverType=SOT):
     solver.push (robot.tasks ['right-ankle'])
 
     return solver
+
+
+class Application (object):
+    """
+    Generic application with most used tasks
+
+    For portability, some signals are accessible as attributes:
+      - zmpRef: input (vector),
+      - comRef: input (vector).
+      - com:    output (vector)
+      - comSelec input (flag)
+      - comdot: input (vector) reference velocity of the center of mass
+
+    """
+    def __init__ (self, robot, solverType=SOT):
+        
+        self.robot = robot
+
+        # --- center of mass ------------
+        (self.featureCom, self.featureComDes, self.taskCom, self.gainCom) = \
+            createCenterOfMassFeatureAndTask\
+            (robot, '{0}_feature_com'.format(robot.name),
+             '{0}_feature_ref_com'.format(robot.name),
+             '{0}_task_com'.format(robot.name))
+
+        # --- operational points tasks -----
+        self.features = dict()
+        self.tasks = dict()
+        self.gains = dict()
+        for op in robot.OperationalPoints:
+            (self.features[op], self.tasks[op], self.gains[op]) = \
+                createOperationalPointFeatureAndTask\
+                (robot, op, '{0}_feature_{1}'.format(robot.name, op),
+                 '{0}_task_{1}'.format(robot.name, op))
+            # define a member for each operational point
+            w = op.split('-')
+            memberName = w[0]
+            for i in w[1:]:
+                memberName += i.capitalize()
+            setattr(self, memberName, self.features[op])
+
+        self.tasks ['com'] = self.taskCom
+        self.features ['com']  = self.featureCom
+        self.gains['com'] = self.gainCom
+        
+        self.features['waist'].selec.value = '011100'
+
+        # --- balance task --- #
+        (self.tasks ['balance'], self.gains ['balance']) =\
+            createBalanceTask (robot, self, '{0}_task_balance'.format (robot.name))
+                
+
+        (self.featurePosture, self.featurePostureDes, self.taskPosture, self.gainPosture) = \
+            createPostureTask(robot, "posture" )
+        self.tasks ['posture'] =  self.taskPosture   
+        self.features ['posture'] = self.featurePosture
+        self.gains ['posture'] = self.gainPosture      
+
+        initializeSignals (self, robot)
+
+        # --- create solver --- #
+        self.solver = Solver (robot, solverType)
+        self.initDefaultTasks()
+
+    def initDefaultTasks(self):
+        self.solver.sot.clear()
+        self.solver.push (self.tasks ['com'])
+        self.solver.push (self.tasks ['left-ankle'])
+        self.solver.push (self.tasks ['right-ankle'])
+
+
+
