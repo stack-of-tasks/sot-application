@@ -103,14 +103,15 @@ def createOperationalPointFeatureAndTask(robot,
                                          featureName,
                                          taskName,
                                          ingain = .2):
-    jacobianName = 'J{0}'.format(operationalPointName)
-    robot.dynamic.signal(operationalPointName).recompute(0)
+    operationalPointMapped = robot.OperationalPointsMap[operationalPointName]
+    jacobianName = 'J{0}'.format(operationalPointMapped)
+    robot.dynamic.signal(operationalPointMapped).recompute(0)
     robot.dynamic.signal(jacobianName).recompute(0)
     feature = \
         FeaturePosition(featureName,
-                        robot.dynamic.signal(operationalPointName),
+                        robot.dynamic.signal(operationalPointMapped),
                         robot.dynamic.signal(jacobianName),
-                        robot.dynamic.signal(operationalPointName).value)
+                        robot.dynamic.signal(operationalPointMapped).value)
     task = Task(taskName)
     task.add(featureName)
     gain = GainAdaptive('gain'+taskName)
