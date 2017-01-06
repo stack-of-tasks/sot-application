@@ -30,7 +30,7 @@ SET(PROJECT_URL "https://github.com/stack-of-tasks/sot-application")
 SETUP_PROJECT()
 
 # Search for dependencies.
-ADD_REQUIRED_DEPENDENCY("sot-dynamic >= 2.8")
+ADD_REQUIRED_DEPENDENCY("sot-dynamic-pinocchio >= 2.8")
 
 # Add subdirectories.
 ADD_SUBDIRECTORY(src)
