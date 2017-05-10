@@ -103,7 +103,7 @@ def createOperationalPointFeatureAndTask(robot,
                                          featureName,
                                          taskName,
                                          ingain = .2):
-    operationalPointMapped = robot.OperationalPointsMap[operationalPointName]
+    operationalPointMapped = operationalPointName
     jacobianName = 'J{0}'.format(operationalPointMapped)
     robot.dynamic.signal(operationalPointMapped).recompute(0)
     robot.dynamic.signal(jacobianName).recompute(0)
