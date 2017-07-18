@@ -113,18 +113,24 @@ def createTasks(robot):
     robot.tasksIne = dict()
 
     # Foot contacts
-    robot.contactLF = MetaTaskKine6d('contactLF',robot.dynamic,'LF','left-ankle')
+    robot.contactLF = MetaTaskKine6d('contactLF',robot.dynamic,'LF',
+                                     robot.OperationalPointsMap['left-ankle'])
     robot.contactLF.feature.frame('desired')
     robot.contactLF.gain.setConstant(10)
-    robot.contactRF = MetaTaskKine6d('contactRF',robot.dynamic,'RF','right-ankle')
+    robot.contactRF = MetaTaskKine6d('contactRF',robot.dynamic,'RF',
+                                     robot.OperationalPointsMap['right-ankle'])
     robot.contactRF.feature.frame('desired')
     robot.contactRF.gain.setConstant(10)
 
     # MetaTasksKine6d for other operational points
-    robot.mTasks['waist'] = MetaTaskKine6d('waist', robot.dynamic, 'waist', 'waist')
-    robot.mTasks['chest'] = MetaTaskKine6d('chest', robot.dynamic, 'chest', 'chest')
-    robot.mTasks['rh'] = MetaTaskKine6d('rh', robot.dynamic, 'rh', 'right-wrist')
-    robot.mTasks['lh'] = MetaTaskKine6d('lh', robot.dynamic, 'lh', 'left-wrist')
+    robot.mTasks['waist'] = MetaTaskKine6d('waist', robot.dynamic, 'waist', 
+                                           robot.OperationalPointsMap['waist'])
+    robot.mTasks['chest'] = MetaTaskKine6d('chest', robot.dynamic, 'chest', 
+                                           robot.OperationalPointsMap['chest'])
+    robot.mTasks['rh'] = MetaTaskKine6d('rh', robot.dynamic, 'rh', 
+                                        robot.OperationalPointsMap['right-wrist'])
+    robot.mTasks['lh'] = MetaTaskKine6d('lh', robot.dynamic, 'lh', 
+                                        robot.OperationalPointsMap['left-wrist'])
     
     for taskName in robot.mTasks:
         robot.mTasks[taskName].feature.frame('desired')
