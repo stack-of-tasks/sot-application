@@ -27,6 +27,8 @@ SET(PROJECT_NAME sot-application)
 SET(PROJECT_DESCRIPTION "Initialization of control graph dependending on applications")
 SET(PROJECT_URL "https://github.com/stack-of-tasks/sot-application")
 
+SET(DOXYGEN_USE_MATHJAX YES)
+
 SETUP_PROJECT()
 
 # Search for dependencies.
