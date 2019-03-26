@@ -1,8 +1,9 @@
 sot-application
 ===============
 
-[![Build Status](https://travis-ci.org/stack-of-tasks/sot-application.png?branch=master)](https://travis-ci.org/stack-of-tasks/sot-application)
-[![Coverage Status](https://coveralls.io/repos/stack-of-tasks/sot-application/badge.png)](https://coveralls.io/r/stack-of-tasks/sot-application)
+[![Pipeline status](https://gepgitlab.laas.fr/stack-of-tasks/sot-application/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/stack-of-tasks/sot-application/commits/master)
+[![Coverage report](https://gepgitlab.laas.fr/stack-of-tasks/sot-application/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/stack-of-tasks/sot-application/master/coverage/)
+
 
 This package provides python initializations scripts for the Stack of
 Tasks.
