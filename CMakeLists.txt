@@ -1,27 +1,42 @@
-# Copyright 2013, Florent Lamiraux, CNRS
+# Copyright 2013, 2020, Florent Lamiraux, Guilhem Saurel, CNRS
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
-SET(PROJECT_NAMESPACE stack-of-tasks)
+# Project properties
+SET(PROJECT_ORG stack-of-tasks)
 SET(PROJECT_NAME sot-application)
 SET(PROJECT_DESCRIPTION "Initialization of control graph dependending on applications")
-SET(PROJECT_URL "https://github.com/${PROJECT_NAMESPACE}/${PROJECT_NAME}")
+SET(PROJECT_URL "https://github.com/${PROJECT_ORG}/${PROJECT_NAME}")
 
+# Project configuration
+SET(PROJECT_USE_CMAKE_EXPORT TRUE)
+SET(DOXYGEN_USE_MATHJAX YES)
+
+# JRL-cmakemodule setup
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/sphinx.cmake)
 
-FINDPYTHON()
+# Project definition
+COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
+PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
 
-SET(DOXYGEN_USE_MATHJAX YES)
+# Project dependencies
+ADD_PROJECT_DEPENDENCY(sot-dynamic-pinocchio REQUIRED PKG_CONFIG_REQUIRES sot-dynamic-pinocchio)
+FINDPYTHON()
 STRING(REGEX REPLACE "-" "_" PY_NAME ${PROJECT_NAME})
 
-CMAKE_POLICY(SET CMP0048 OLD)
-PROJECT(${PROJECT_NAME} CXX)
+ADD_LIBRARY(${PROJECT_NAME} INTERFACE)
+INSTALL(TARGETS ${PROJECT_NAME} EXPORT ${TARGETS_EXPORT_NAME} DESTINATION lib)
 
-# Search for dependencies.
-ADD_REQUIRED_DEPENDENCY("sot-dynamic-pinocchio >= 2.8")
 
-# Add subdirectories.
-ADD_SUBDIRECTORY(${PY_NAME})
+PYTHON_INSTALL_ON_SITE(${PY_NAME} __init__.py)
+
+PYTHON_INSTALL_ON_SITE(${PY_NAME}/velocity __init__.py)
+PYTHON_INSTALL_ON_SITE(${PY_NAME}/velocity precomputed_tasks.py)
+PYTHON_INSTALL_ON_SITE(${PY_NAME}/velocity precomputed_meta_tasks.py)
+
+PYTHON_INSTALL_ON_SITE(${PY_NAME}/acceleration __init__.py)
+PYTHON_INSTALL_ON_SITE(${PY_NAME}/acceleration precomputed_meta_tasks.py)
+
 ADD_SUBDIRECTORY(doc)
