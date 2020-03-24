@@ -5,7 +5,7 @@
 from numpy import eye
 
 from dynamic_graph import plug
-from dynamic_graph.sot.core import FeatureGeneric
+from dynamic_graph.sot.core.feature_generic import FeatureGeneric
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph.sot.dyninv import SolverKine, TaskDynInequality, TaskDynLimits
 from dynamic_graph.sot.dyninv.meta_task_dyn_6d import MetaTaskDyn6d

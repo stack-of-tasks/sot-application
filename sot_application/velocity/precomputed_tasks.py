@@ -7,9 +7,12 @@ import warnings
 from numpy import identity
 
 from dynamic_graph import plug
-from dynamic_graph.sot.core import SOT, FeatureGeneric, GainAdaptive, JointLimitator, Task
+from dynamic_graph.sot.core.feature_generic import FeatureGeneric
 from dynamic_graph.sot.core.feature_position import FeaturePosition
+from dynamic_graph.sot.core.gain_adaptive import GainAdaptive
+from dynamic_graph.sot.core.joint_limitator import JointLimitator
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
+from dynamic_graph.sot.core.sot import SOT, Task
 
 
 class Solver:
@@ -151,17 +154,19 @@ def initialize(robot, solverType=SOT):
         Use dynamic_graph.sot.application.velocity.precomputed_tasks.Application""")
 
     # --- center of mass ------------
-    (robot.featureCom, robot.featureComDes, robot.comTask, robot.gainCom) = createCenterOfMassFeatureAndTask(
-        robot, '{0}_feature_com'.format(robot.name), '{0}_feature_ref_com'.format(robot.name),
-        '{0}_task_com'.format(robot.name))
+    (robot.featureCom, robot.featureComDes, robot.comTask,
+     robot.gainCom) = createCenterOfMassFeatureAndTask(robot, '{0}_feature_com'.format(robot.name),
+                                                       '{0}_feature_ref_com'.format(robot.name),
+                                                       '{0}_task_com'.format(robot.name))
 
     # --- operational points tasks -----
     robot.features = dict()
     robot.tasks = dict()
     robot.gains = dict()
     for op in robot.OperationalPoints:
-        (robot.features[op], robot.tasks[op], robot.gains[op]) = createOperationalPointFeatureAndTask(
-            robot, op, '{0}_feature_{1}'.format(robot.name, op), '{0}_task_{1}'.format(robot.name, op))
+        (robot.features[op], robot.tasks[op],
+         robot.gains[op]) = createOperationalPointFeatureAndTask(robot, op, '{0}_feature_{1}'.format(robot.name, op),
+                                                                 '{0}_task_{1}'.format(robot.name, op))
         # define a member for each operational point
         w = op.split('-')
         memberName = w[0]
@@ -201,23 +206,25 @@ class Application(object):
       - comdot: input (vector) reference velocity of the center of mass
 
     """
-
     def __init__(self, robot, solverType=SOT):
 
         self.robot = robot
 
         # --- center of mass ------------
-        (self.featureCom, self.featureComDes, self.taskCom, self.gainCom) = createCenterOfMassFeatureAndTask(
-            robot, '{0}_feature_com'.format(robot.name), '{0}_feature_ref_com'.format(robot.name),
-            '{0}_task_com'.format(robot.name))
+        (self.featureCom, self.featureComDes, self.taskCom,
+         self.gainCom) = createCenterOfMassFeatureAndTask(robot, '{0}_feature_com'.format(robot.name),
+                                                          '{0}_feature_ref_com'.format(robot.name),
+                                                          '{0}_task_com'.format(robot.name))
 
         # --- operational points tasks -----
         self.features = dict()
         self.tasks = dict()
         self.gains = dict()
         for op in robot.OperationalPoints:
-            (self.features[op], self.tasks[op], self.gains[op]) = createOperationalPointFeatureAndTask(
-                robot, op, '{0}_feature_{1}'.format(robot.name, op), '{0}_task_{1}'.format(robot.name, op))
+            (self.features[op], self.tasks[op],
+             self.gains[op]) = createOperationalPointFeatureAndTask(robot, op,
+                                                                    '{0}_feature_{1}'.format(robot.name, op),
+                                                                    '{0}_task_{1}'.format(robot.name, op))
             # define a member for each operational point
             w = op.split('-')
             memberName = w[0]
@@ -235,8 +242,8 @@ class Application(object):
         (self.tasks['balance'], self.gains['balance']) = createBalanceTask(robot, self,
                                                                            '{0}_task_balance'.format(robot.name))
 
-        (self.featurePosture, self.featurePostureDes, self.taskPosture, self.gainPosture) = createPostureTask(
-            robot, "posture")
+        (self.featurePosture, self.featurePostureDes, self.taskPosture,
+         self.gainPosture) = createPostureTask(robot, "posture")
         self.tasks['posture'] = self.taskPosture
         self.features['posture'] = self.featurePosture
         self.gains['posture'] = self.gainPosture

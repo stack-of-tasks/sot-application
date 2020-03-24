@@ -5,7 +5,8 @@
 from numpy import eye
 
 from dynamic_graph import plug
-from dynamic_graph.sot.core import FeatureGeneric, JointLimitator
+from dynamic_graph.sot.core.feature_generic import FeatureGeneric
+from dynamic_graph.sot.core.joint_limitator import JointLimitator
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph.sot.core.meta_task_6d import toFlags
 from dynamic_graph.sot.core.meta_task_posture import MetaTaskKinePosture
