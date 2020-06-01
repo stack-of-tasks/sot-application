@@ -1,8 +1,8 @@
 sot-application
 ===============
 
-[![Pipeline status](https://gepgitlab.laas.fr/stack-of-tasks/sot-application/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/stack-of-tasks/sot-application/commits/master)
-[![Coverage report](https://gepgitlab.laas.fr/stack-of-tasks/sot-application/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/stack-of-tasks/sot-application/master/coverage/)
+[![Pipeline status](https://gitlab.laas.fr/stack-of-tasks/sot-application/badges/master/pipeline.svg)](https://gitlab.laas.fr/stack-of-tasks/sot-application/commits/master)
+[![Coverage report](https://gitlab.laas.fr/stack-of-tasks/sot-application/badges/master/coverage.svg?job=doc-coverage)](http://projects.laas.fr/gepetto/doc/stack-of-tasks/sot-application/master/coverage/)
 
 
 This package provides python initializations scripts for the Stack of
