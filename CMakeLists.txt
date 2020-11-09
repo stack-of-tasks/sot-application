@@ -15,7 +15,6 @@ SET(DOXYGEN_USE_MATHJAX YES)
 # JRL-cmakemodule setup
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/python.cmake)
-INCLUDE(cmake/sphinx.cmake)
 
 # Project definition
 COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
@@ -38,5 +37,3 @@ PYTHON_INSTALL_ON_SITE(${PY_NAME}/velocity precomputed_meta_tasks.py)
 
 PYTHON_INSTALL_ON_SITE(${PY_NAME}/acceleration __init__.py)
 PYTHON_INSTALL_ON_SITE(${PY_NAME}/acceleration precomputed_meta_tasks.py)
-
-ADD_SUBDIRECTORY(doc)
