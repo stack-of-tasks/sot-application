@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>sot-dynamic-pinocchio</name>
+  <name>sot-application</name>
   <version>1.2.5</version>
   <description>
      Application dependent control graph initialization scripts for the SoT
