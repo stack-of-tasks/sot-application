@@ -37,3 +37,5 @@ PYTHON_INSTALL_ON_SITE(${PY_NAME}/velocity precomputed_meta_tasks.py)
 
 PYTHON_INSTALL_ON_SITE(${PY_NAME}/acceleration __init__.py)
 PYTHON_INSTALL_ON_SITE(${PY_NAME}/acceleration precomputed_meta_tasks.py)
+
+INSTALL(FILES package.xml DESTINATION share/${PROJECT_NAME})
