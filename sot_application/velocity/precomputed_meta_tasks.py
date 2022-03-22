@@ -15,6 +15,7 @@ from dynamic_graph.sot.dyninv import SolverKine, TaskInequality, TaskJointLimits
 
 
 class Solver:
+
     def __init__(self, robot):
         self.robot = robot
 

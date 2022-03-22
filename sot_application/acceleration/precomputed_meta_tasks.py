@@ -13,6 +13,7 @@ from dynamic_graph.sot.dyninv.meta_tasks_dyn import MetaTaskDynCom, MetaTaskDynP
 
 
 class Solver:
+
     def __init__(self, robot):
         self.robot = robot
         """

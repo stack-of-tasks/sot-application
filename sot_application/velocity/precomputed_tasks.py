@@ -16,6 +16,7 @@ from dynamic_graph.sot.core.sot import SOT, Task
 
 
 class Solver:
+
     def __init__(self, robot, solverType=SOT):
         self.robot = robot
 
@@ -206,6 +207,7 @@ class Application(object):
       - comdot: input (vector) reference velocity of the center of mass
 
     """
+
     def __init__(self, robot, solverType=SOT):
 
         self.robot = robot
