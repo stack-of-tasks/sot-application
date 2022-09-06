@@ -14,7 +14,6 @@ SET(DOXYGEN_USE_MATHJAX YES)
 
 # JRL-cmakemodule setup
 INCLUDE(cmake/base.cmake)
-INCLUDE(cmake/python.cmake)
 
 # Project definition
 COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
@@ -22,7 +21,6 @@ PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
 
 # Project dependencies
 ADD_PROJECT_DEPENDENCY(sot-dynamic-pinocchio REQUIRED)
-FINDPYTHON()
 STRING(REGEX REPLACE "-" "_" PY_NAME ${PROJECT_NAME})
 
 ADD_LIBRARY(${PROJECT_NAME} INTERFACE)
