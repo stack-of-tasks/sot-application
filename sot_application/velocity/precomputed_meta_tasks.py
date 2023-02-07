@@ -89,7 +89,6 @@ def setTaskLim(taskJL, robot):
 
 
 def createTasks(robot):
-
     # MetaTasks dictonary
     robot.mTasks = dict()
     robot.tasksIne = dict()
@@ -156,7 +155,6 @@ def createTasks(robot):
 
 
 def createBalance(robot, solver):
-
     solver.clear()
 
     # Task Limits
@@ -172,7 +170,6 @@ def createBalance(robot, solver):
 
 
 def initialize(robot):
-
     # --- create solver --- #
     solver = Solver(robot)
 

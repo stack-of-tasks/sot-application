@@ -170,7 +170,6 @@ def setContacts(contactLF, contactRF):
 
 
 def createTasks(robot):
-
     # MetaTasks dictonary
     robot.mTasks = dict()
     robot.tasksIne = dict()
@@ -225,7 +224,6 @@ def createTasks(robot):
 
 
 def createBalanceAndPosture(robot, solver):
-
     solver.clear()
 
     # Task Limits
@@ -241,7 +239,6 @@ def createBalanceAndPosture(robot, solver):
 
 
 def initialize(robot):
-
     # --- create solver --- #
     solver = Solver(robot)
 
