@@ -231,7 +231,6 @@ class Application(object):
     """
 
     def __init__(self, robot, solverType=SOT):
-
         self.robot = robot
 
         # --- center of mass ------------
